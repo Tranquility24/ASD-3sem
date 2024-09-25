@@ -1,6 +1,7 @@
 #include "iostream"
 #include "stack"
 #include "vector"
+#include <time.h>
 
 constexpr char TAB = '\t';
 
@@ -67,9 +68,15 @@ int main() {
 		std::cout << "Башни до:" << std::endl;
 		displayRods(rods);
 
+		clock_t start = clock();
+
 		hanoi(rods, numberDisks, positionStarting, positionFinal, positionIntermediate, numberMoves);
 
+		clock_t end = clock();
+		double seconds = (double)(end - start) / CLOCKS_PER_SEC;
+
 		std::cout << "Общее количество шагов: " << numberMoves << std::endl;
+		std::cout << "Время: " << seconds << std::endl;
 
 	}
 	catch (const std::exception& ex) {

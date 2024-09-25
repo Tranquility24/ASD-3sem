@@ -14,17 +14,33 @@ namespace Graph {
 	// Out
 	void outputMoveChain(const std::vector<int>& chain);
 
+	//V — количество вершин
+	//E — количество рёбер
+
+	//Список смежности:
+	//	время: O(V+E)
+	//	память: O(V+E)
+
+	//Матрица смежности:
+	//	время: O(V^2)
+	//	память: O(V^2)
+
+	//Список рёбер:
+	//	время: O(VE)
+	//	память: O(E)
+
+	// Convert to List AdjacencyGraph
+
+	std::vector<std::vector<int>> convertToListAdjacencyGraph(std::vector<Graph::Edges> listEdgesGraph, int size);
+
 	// Breadth First Search
-	bool checkQueueVertex(std::queue<int> queueVertex, const int& variable);
-	std::vector<int> bfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start);
-	std::vector<int> bfs(std::vector<std::vector<int>> listAdjacencyGraph, int start);
-	std::vector<int> bfs(std::vector<Graph::Edges> listEdgesGraph, int start);
+
+	std::vector<int> bfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start, int& O);
+	std::vector<int> bfs(std::vector<std::vector<int>> listAdjacencyGraph, int start, int& O);
 
 	// Depth First Search
-	bool checkStackVertex(std::stack<int> stackVertex, const int& variable);
-	std::vector<int> dfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start);
-	std::vector<int> dfs(std::vector<std::vector<int>> listAdjacencyGraph, int start);
-	std::vector<int> dfs(std::vector<Graph::Edges> listEdgesGraph, int start);
+	std::vector<int> dfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start, int& O);
+	std::vector<int> dfs(std::vector<std::vector<int>> listAdjacencyGraph, int start, int& O);
 }
 
 int main() {
@@ -62,39 +78,64 @@ int main() {
 
 	std::vector<Graph::Edges> listEdgesGraph = {
 
-		{1,2}, {2,1},
-		{1,5}, {5,1},
-		{2,7}, {7,2},
-		{2,8}, {8,2},
-		{3,8}, {8,3},
-		{4,6}, {6,4},
-		{4,9}, {9,4},
-		{5,6}, {6,5},
-		{6,9}, {9,6},
-		{7,8}, {8,7},
-		{9,10}, {10,9}
+		{1,2}, {1,5},
+		{2,7}, {2,8},
+		{3,8}, {4,6},
+		{4,9}, {5,6},
+		{6,9}, {7,8},
+		{9,10}
 	};
 
-	std::cout << "Список смежности (bfs):" << std::endl;
-	Graph::outputMoveChain(Graph::bfs(listAdjacencyGraph, 1));
+	int o1{}, o2{}, o3{}, o4{}, o5{}, o6{};
 
 	std::cout << "Матрица смежности (bfs):" << std::endl;
-	Graph::outputMoveChain(Graph::bfs(matrixAdjacencyGraph, 1));
+	Graph::outputMoveChain(Graph::bfs(matrixAdjacencyGraph, 1, o2));
+
+	std::cout << "O-большое: " << o2 << std::endl;
+
+	std::cout << "Список смежности (bfs):" << std::endl;
+	Graph::outputMoveChain(Graph::bfs(listAdjacencyGraph, 1, o1));
+
+	std::cout << "O-большое: " << o1 << std::endl;
 
 	std::cout << "Список рёбер (bfs):" << std::endl;
-	Graph::outputMoveChain(Graph::bfs(listEdgesGraph, 1));
+	Graph::outputMoveChain(Graph::bfs(listAdjacencyGraph, 1, o3));
 
+	std::cout << "O-большое: " << o3 << std::endl;
+	
 	std::cout << "Матрица смежности (dfs):" << std::endl;
-	Graph::outputMoveChain(Graph::dfs(matrixAdjacencyGraph, 1));
+	Graph::outputMoveChain(Graph::dfs(matrixAdjacencyGraph, 1, o4));
+
+	std::cout << "O-большое: " << o4 << std::endl;
 
 	std::cout << "Список смежности (dfs):" << std::endl;
-	Graph::outputMoveChain(Graph::dfs(listAdjacencyGraph, 1));
+	Graph::outputMoveChain(Graph::dfs(listAdjacencyGraph, 1, o5));
+
+	std::cout << "O-большое: " << o5 << std::endl;
 
 	std::cout << "Список рёбер (dfs):" << std::endl;
-	Graph::outputMoveChain(Graph::dfs(listEdgesGraph, 1));
+	Graph::outputMoveChain(Graph::dfs(listAdjacencyGraph, 1, o6));
+	std::cout << "O-большое: " << o6 << std::endl;
 
 	return 0;
 }
+
+// Convert
+
+std::vector<std::vector<int>> Graph::convertToListAdjacencyGraph(std::vector<Graph::Edges> listEdgesGraph, int size)
+{
+	std::vector<std::vector<int>> listAdjacencyGraph(size);
+
+	for (int i = 0, j = listEdgesGraph.size(); i < j; i++) {
+
+		int tmp = listEdgesGraph.at(i).vertexInitial - 1;
+		listAdjacencyGraph.at(tmp).push_back(listEdgesGraph.at(i).vertexFinal);
+	}
+
+	return listAdjacencyGraph;
+}
+
+// Out
 
 void Graph::outputMoveChain(const std::vector<int>& chain) {
 
@@ -106,263 +147,183 @@ void Graph::outputMoveChain(const std::vector<int>& chain) {
 	std::cout << " end.\n";
 }
 
-bool Graph::checkStackVertex(std::stack<int> stackVertex, const int& variable) {
+// List Adjacency Graph
 
-	while (!stackVertex.empty()) {
+std::vector<int> Graph::bfs(std::vector<std::vector<int>> listAdjacencyGraph, int start, int& O) {
 
-		int tmp = stackVertex.top();
-		stackVertex.pop();
+	std::vector<bool> visitedVertex;
+	std::vector<int> orderVisitingVertex;
 
-		if (variable == tmp) {
-
-			return false;
-		}
+	for (int i = 0, b = listAdjacencyGraph.size(); i < b; i++) {
+		visitedVertex.push_back(false);
 	}
 
-	return true;
-}
-
-bool Graph::checkQueueVertex(std::queue<int> queueVertex, const int& variable) {
-
-	while (!queueVertex.empty()) {
-
-		int tmp = queueVertex.front();
-		queueVertex.pop();
-		
-		if (variable == tmp) {
-
-			return false;
-		}
-	}
-
-	return true;
-}
-
-std::vector<int> Graph::bfs(std::vector<std::vector<int>> listAdjacencyGraph, int start) {
-
-	std::vector<int> visitedVertex;
 	std::queue<int> queueVertex;
 	int currentVertex{};
+	O = -1;
 
 	queueVertex.push(start);
+	--start;
+	visitedVertex.at(start) = true;
 
 	while (!queueVertex.empty()) {
 
 		currentVertex = queueVertex.front();
+		orderVisitingVertex.push_back(currentVertex);
 		queueVertex.pop();
-		visitedVertex.push_back(currentVertex);
 
 		--currentVertex;
 
-		for (std::vector<int>::iterator vertex = listAdjacencyGraph[currentVertex].begin(); vertex != listAdjacencyGraph[currentVertex].end(); vertex++) {
+		for (int i = 0, j = listAdjacencyGraph[currentVertex].size(); i < j; i++) {
 
-			bool checkAddingVertex = true;
+			++O;
 
-			for (auto checkVisited : visitedVertex) {
+			int tmp = listAdjacencyGraph[currentVertex].at(i) - 1;
 
-				*vertex == checkVisited ? checkAddingVertex = false : true;
-			}
+			if (!visitedVertex.at(tmp)) {
 
-			if (checkAddingVertex && checkQueueVertex(queueVertex, *vertex)) {
-
-				queueVertex.push(*vertex);
+				queueVertex.push(listAdjacencyGraph[currentVertex].at(i));
+				visitedVertex.at(tmp) = true;
 
 			}
 		}
 	}
 
-	return visitedVertex;
+	return orderVisitingVertex;
 }
 
-std::vector<int> Graph::bfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start) {
+std::vector<int> Graph::dfs(std::vector<std::vector<int>> listAdjacencyGraph, int start, int& O) {
 
-	std::vector<int> visitedVertex;
+	std::vector<bool> visitedVertex;
+	std::vector<int> orderVisitingVertex;
+
+	for (int i = 0, b = listAdjacencyGraph.size(); i < b; i++) {
+		visitedVertex.push_back(false);
+	}
+
+	std::queue<int> stackVertex;
+	int currentVertex{};
+	O = -1;
+
+	stackVertex.push(start);
+	--start;
+	visitedVertex.at(start) = true;
+
+	while (!stackVertex.empty()) {
+
+		currentVertex = stackVertex.front();
+		orderVisitingVertex.push_back(currentVertex);
+		stackVertex.pop();
+
+		--currentVertex;
+
+		for (int i = listAdjacencyGraph[currentVertex].size() - 1; i >= 0; i--) {
+
+			++O;
+
+			int tmp = listAdjacencyGraph[currentVertex].at(i) - 1;
+
+			if (!visitedVertex.at(tmp)) {
+
+				stackVertex.push(listAdjacencyGraph[currentVertex].at(i));
+				visitedVertex.at(tmp) = true;
+
+			}
+		}
+	}
+
+	return orderVisitingVertex;
+}
+
+// Matrix Adjacency Graph
+
+std::vector<int> Graph::bfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start, int& O) {
+
+	std::vector<bool> visitedVertex;
+	std::vector<int> orderVisitingVertex;
+
+	for (int i = 0, b = matrixAdjacencyGraph.size(); i < b; i++) {
+		visitedVertex.push_back(false);
+	}
+
 	std::queue<int> queueVertex;
 	int currentVertex{};
+	O = 0;
 
 	queueVertex.push(start);
+	--start;
+	visitedVertex.at(start) = true;
+
 
 	while (!queueVertex.empty()) {
 
 		currentVertex = queueVertex.front();
+		orderVisitingVertex.push_back(currentVertex);
 		queueVertex.pop();
-		visitedVertex.push_back(currentVertex); 
 
 		--currentVertex;
 
 		for (int i = 0; i < matrixAdjacencyGraph.at(currentVertex).size(); i++) {
 
+			++O;
+
 			if (matrixAdjacencyGraph.at(currentVertex).at(i)) {
 
 				int tmp = i + 1;
-				
-				bool checkAddingVertex = true;
 
-				for (auto checkVisited : visitedVertex) {
-
-					tmp == checkVisited ? checkAddingVertex = false : true;
-				}
-
-				if (checkAddingVertex && checkQueueVertex(queueVertex, tmp)) {
+				if (!visitedVertex.at(i)) {
 
 					queueVertex.push(tmp);
+					visitedVertex.at(i) = true;
 
 				}
 			}
 		}
 	}
 
-	return visitedVertex;
+	return orderVisitingVertex;
 }
 
-std::vector<int> Graph::bfs(std::vector<Graph::Edges> listEdgesGraph, int start) {
+std::vector<int> Graph::dfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start, int& O) {
 
-	std::vector<int> visitedVertex;
-	std::queue<int> queueVertex;
-	int currentVertex{};
+	std::vector<bool> visitedVertex;
+	std::vector<int> orderVisitingVertex;
 
-	queueVertex.push(start);
-
-	--currentVertex;
-
-	while (!queueVertex.empty()) {
-
-		currentVertex = queueVertex.front();
-		queueVertex.pop();
-		visitedVertex.push_back(currentVertex);
-
-		for (std::vector<Graph::Edges>::iterator vertex = listEdgesGraph.begin(); vertex != listEdgesGraph.end(); vertex++) {
-
-			if ((*vertex).vertexInitial == currentVertex) {
-
-				bool checkAddingVertex = true;
-
-				for (auto checkVisited : visitedVertex) {
-
-					(*vertex).vertexFinal == checkVisited ? checkAddingVertex = false : true;
-				}
-
-				if (checkAddingVertex && checkQueueVertex(queueVertex, (*vertex).vertexFinal)) {
-
-					queueVertex.push((*vertex).vertexFinal);
-				}
-			}
-		}
+	for (int i = 0, b = matrixAdjacencyGraph.size(); i < b; i++) {
+		visitedVertex.push_back(false);
 	}
 
-	return visitedVertex;
-}
-
-std::vector<int> Graph::dfs(std::vector<std::vector<bool>> matrixAdjacencyGraph, int start)
-{
-	std::vector<int> visitedVertex;
 	std::stack<int> stackVertex;
 	int currentVertex{};
+	O = 0;
 
 	stackVertex.push(start);
+	--start;
+	visitedVertex.at(start) = true;
 
 	while (!stackVertex.empty()) {
 
 		currentVertex = stackVertex.top();
+		orderVisitingVertex.push_back(currentVertex);
 		stackVertex.pop();
-		visitedVertex.push_back(currentVertex);
 
 		--currentVertex;
 
 		for (int i = matrixAdjacencyGraph.at(currentVertex).size() - 1; i >= 0; i--) {
 
+			++O;
+
 			if (matrixAdjacencyGraph.at(currentVertex).at(i)) {
 
 				int tmp = i + 1;
 
-				bool checkAddingVertex = true;
-
-				for (auto checkVisited : visitedVertex) {
-
-					tmp == checkVisited ? checkAddingVertex = false : true;
-				}
-
-				if (checkAddingVertex && checkStackVertex(stackVertex, tmp)) {
+				if (!visitedVertex.at(i)) {
 
 					stackVertex.push(tmp);
-
+					visitedVertex.at(i) = true;
 				}
 			}
 		}
 	}
-
-	return visitedVertex;
-}
-
-std::vector<int> Graph::dfs(std::vector<std::vector<int>> listAdjacencyGraph, int start) {
-
-	std::vector<int> visitedVertex;
-	std::stack<int> stackVertex;
-	int currentVertex{};
-
-	stackVertex.push(start);
-
-	while (!stackVertex.empty()) {
-
-		currentVertex = stackVertex.top();
-		stackVertex.pop();
-		visitedVertex.push_back(currentVertex);
-
-		--currentVertex;
-
-		for (std::vector<int>::reverse_iterator vertex = listAdjacencyGraph[currentVertex].rbegin(); vertex != listAdjacencyGraph[currentVertex].rend(); vertex++) {
-
-			bool checkAddingVertex = true;
-
-			for (auto checkVisited : visitedVertex) {
-
-				*vertex == checkVisited ? checkAddingVertex = false : true;
-			}
-
-			if (checkAddingVertex && checkStackVertex(stackVertex, *vertex)) {
-
-				stackVertex.push(*vertex);
-			}
-		}
-	}
-
-	return visitedVertex;
-}
-
-std::vector<int> Graph::dfs(std::vector<Graph::Edges> listEdgesGraph, int start)
-{
-	std::vector<int> visitedVertex;
-	std::stack<int> stackVertex;
-	int currentVertex{};
-
-	stackVertex.push(start);
-
-	--currentVertex;
-
-	while (!stackVertex.empty()) {
-
-		currentVertex = stackVertex.top();
-		stackVertex.pop();
-		visitedVertex.push_back(currentVertex);
-
-		for (std::vector<Graph::Edges>::reverse_iterator vertex = listEdgesGraph.rbegin(); vertex != listEdgesGraph.rend(); vertex++) {
-
-			if ((*vertex).vertexInitial == currentVertex) {
-
-				bool checkAddingVertex = true;
-
-				for (auto checkVisited : visitedVertex) {
-
-					(*vertex).vertexFinal == checkVisited ? checkAddingVertex = false : true;
-				}
-
-				if (checkAddingVertex && checkStackVertex(stackVertex, (*vertex).vertexFinal)) {
-
-					stackVertex.push((*vertex).vertexFinal);
-				}
-			}
-		}
-	}
-
-	return visitedVertex;
+	return orderVisitingVertex;
 }
